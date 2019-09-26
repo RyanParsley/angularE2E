@@ -1,0 +1,14 @@
+{
+  "name": "e2eclass",
+  "version": "1.0.0",
+  "description": "Slides for teaching e2e for angular",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "remarker": "^1.10.0"
+  }
+}
