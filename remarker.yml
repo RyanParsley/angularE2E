@@ -1,2 +1,4 @@
 cssFiles:
   - style.css
+dest: docs
+out: index.html
