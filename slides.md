@@ -20,7 +20,7 @@ It's just that best practices feel more rarely discussed with E2E testing than t
 background-image: url(./assets/testPyramid.png)
 background-size: 500px auto
 
-# What is an end to end test!?
+# The code confidence parfait
 
 ???
 
@@ -37,6 +37,12 @@ I'm getting ahead of myself. Let's start with answering "What is an end to end t
 ???
 
 There are a lot of tools to provide you code confidence, and many of those tools come by more than one name. Or, are otherwise hard to distinguish between. I'm calling this class of tests e2e tests because that's the name of the folder the angular cli puts them in by default.
+
+---
+class: middle, center
+
+# In other words...
+## E2E tests run in the browser to more closely match real world user interaction with our app.
 ---
 
 background-image: url(./assets/whyE2E.gif)
@@ -50,8 +56,43 @@ The whole isn't always equal to the sum of it's parts.
 
 ---
 
+# Key components of end to end testing
 
-# Tests that run in the browser to more closely match user interaction with our app.
+--
+* Browser
+
+--
+* Tool to drive a browser
+  * Selenium/WebDriver
+  * Puppeteer
+
+--
+* Test Framework (interaction)
+  * Protractor
+  * Cypress
+
+--
+* Test Framework (assertions)
+  * Jasmine
+  * Mocha
+  * QUnit
+
+???
+
+Basically, you have a real browser somehow controlled by code to poke around your website. If this makes sense, you're way ahead of the game already. We have a framework that negotiates the interaction through a driver that controls a browser to satisfy assertions.
+
+Protractor speaks Jasmine and adds Angular sugar on top of WebDriver. It communicates with a browser via the Selenium Server.
+
+---
+class: middle, center, title
+
+# Protractor
+
+---
+
+# So what is Protractor?
+
+--
 
 > Protractor is an end-to-end test framework for Angular and AngularJS
 applications. Protractor runs tests against your application running in a real
@@ -62,26 +103,6 @@ browser, interacting with it as a user would. <span>&mdash;[Protractortest.org](
 In some ways, it's easier to get started with E2E testing than with unit testing.
 
 With unit testing, you purposefully break out of standard app flow and Dependency Injections to focus one each piece of the machine. With E2E testing, you're taking a step back to watch the machine work. So you don't need to wire up any Dependency injection or manually trigger lifecycle events. You're testing the fully functioning app. 
-
----
-# Key components of end to end testing
-* Test Framework (interaction)
-  * Protractor
-  * Cypress
-* Test Framework (assertions)
-  * Jasmine
-  * Mocha
-  * QUnit
-* Tool to drive a browser
-  * Selenium/WebDriver
-  * Puppeteer
-* Browser
-
-???
-
-Basically, you have a real browser somehow controlled by code to poke around your website. If this makes sense, you're way ahead of the game already. We have a framework that negotiates the interaction through a driver that controls a browser to satisfy assertions.
-
-Protractor speaks Jasmine and adds Angular sugar on top of WebDriver. It communicates with a browser via the Selenium Server.
 
 ---
 # What does that look like!?
@@ -108,19 +129,25 @@ describe('todo list', function() {
 ---
 class: middle, center
 
-# Good news: Angular CLI wires up Protractor out of the box
+# Good news
+
+## Angular CLI wires up Protractor out of the box...
 
 ---
-background-image: url(./assets/welcomeToProtractor.png)
-background-size: 850px auto
+class: middle, center
 
-# Bad news: ...kind of
+# Bad news
+
+--
+
+## ...kind of
+![welcome to protractor](./assets/welcomeToProtractor.png)
 
 ???
 Selenium has comically useless feedback sometimes. Unfortunately, the first opportunity for this is the first time you ever use it if chrome versions come out of sync with node module dependency. If you see something like this, upgrade chrome.
 
 ---
-class: middle, center
+class: middle, center, title
 
 # Strategy
 
@@ -182,7 +209,31 @@ much as you can.
   * introduce unique data attributes (uncoupled from styling) if you don't otherwise have a reasonable selector to hook on to
 
 ---
-# What should we *not* test?
+
+# Locators
+## Be as specific as you need, but no more
+
+???
+
+Do not simply copy the class attribute from chrome inspector and past that in
+`by.css()`. That is often littered with presentational helpers that introduce
+additional brittleness to your tests. If someone comes by and eliminates a
+`.float` class either because the element's position has changed or a good old
+fashion CSS refactor, that should not likely make a test fail.
+
+---
+
+# Do not wait static amounts of time
+
+???
+
+When you set a static wait time, you guarantee the tests will wait an amount of
+time that you hope is greater than the worst case scenario. Craig searched the
+specs and calculated about 28 minutes of waiting is hard coded.
+---
+class: middle, center, title
+
+# Tactics
 
 ---
 
@@ -190,10 +241,73 @@ much as you can.
 
 ---
 
-# How to wait responsibly
+# Do not do this 
 
+```javascript
+public async verifySizeAfterResize(): Promise<boolean> {
+  // Vote of no confidence in DOM readiness
+  await this.actions.shortWait('Short Wait');
+  const width = 1000, height = 800;
+  browser.driver.manage().window().setSize(width, height);
+  // ಠ_ಠ
+  await this.actions.mediumWait('Medium Wait');
+  await this.actions.moveMouseToElement(
+    this.myLoadsSearchIcon,
+    'Move mouse to Icon');
+  await this.actions.click(
+    this.myLoadsSearchIcon,
+    'Click the search icon');
+  // ಠ_ಠ
+  await this.actions.shortWait('Short Wait');
+  return await this.actions.isElementDisplayed(
+    this.searchButtonSearchPanel,
+    'Display the Search Button');
+}
+```
 ---
-class: middle, center
+# A better approach
+## Resolve promises instead of choosing arbitrary times
+
+```
+beforeEach(async () => {
+  await myLoads.open('/my-loads?doAsUserID=JBHKOPA2');
+  await pageStable();
+});
+
+const pageStable = async() => {
+  Promise.all([
+    await browser.wait(EC.not(EC.visibilityOf(myLoads.loadingMask)), 20000),
+    await myLoads.actions.waitUntilElementInvisible(
+      myLoads.growl,
+      'Wait for growl to go away')
+  ]);
+};
+
+it('should open my-loads #smoke', () => {
+  expect(myLoads.title.getText()).toEqual(titleText);
+});
+
+```
+---
+# ExpectedConditions
+
+A library of canned expected conditions that are useful for protractor.
+
+Each condition returns a function that evaluates to a promise.
+
+```
+var EC = protractor.ExpectedConditions;
+var button = $('#xyz');
+var isClickable = EC.elementToBeClickable(button);
+
+browser.get(URL);
+browser.wait(isClickable, 5000); //wait for an element to become clickable
+button.click();
+```
+
+[Documentation](https://www.protractortest.org/#/api?view=ProtractorExpectedConditions)
+---
+class: middle, center, title
 
 # Anti-patterns
 
@@ -201,13 +315,136 @@ class: middle, center
 
 # Timeouts
 
+```javascript
+// DO NOT DO THIS!
+browser.sleep(20000)
+```
+
 ---
 
 # Brittle selectors
-
+```Javascript
+//(╯°□°)╯︵ ┻━┻
+originStateSearchBox = element.all(by.className(
+  'ui-inputtext ui-widget ui-state-default ui-corner-all' +
+  'ui-autocomplete-input ng-star-inserted'
+)).get(1);
+```
 ---
 
 #  Overly eager testing
+
+---
+class: middle, center, title
+
+# Less talk more code
+
+---
+# App to be tested
+## AcuteBlog
+
+* Authentication
+  * Register
+  * Login
+  * Restricted access
+* Post
+  * Create (logged in users)
+  * Read (anyone)
+  * Update (only your own)
+  * Delete (only your own)
+
+---
+# Run tests
+
+```bash
+ng e2e
+```
+---
+
+# Exercise 1
+## Hello World!
+
+* Write a test that confirms the app is running
+
+---
+# Exercise 2
+## Happy path of an anonymous reader
+
+--
+
+* Home page should be accessible
+--
+
+* Dashboard page should *not* be accessible
+--
+
+* Bogus links redirect to 404
+--
+
+* Posts should be readable
+--
+
+* Posts should *not* be writable
+
+---
+# Exercise 3
+## Users should be able to register
+
+--
+
+* Route should be accessible
+--
+
+* Link should be in the menu
+--
+
+* Form should function
+--
+
+* Registered user should be redirected to dashboard
+
+---
+# Exercise 4
+## Users should be able to log in
+
+--
+
+* Route should be accessible
+--
+
+* Link should be in the menu
+--
+
+* Form should function
+--
+
+* Logged in user should be redirected to dashboard
+
+---
+# Exercise 5
+## Happy path of a user with an account
+
+--
+
+* Users can log in
+--
+
+* Logged in users can create posts
+--
+
+* Logged in users can edit their own posts
+--
+
+* Logged in users can comment on posts of others
+--
+
+* Logged in users cannot edit the posts of others
+--
+
+* Logged in users can delete their own posts
+--
+
+* Logged in users can *not* delete the posts of others
 
 ---
 class: links
