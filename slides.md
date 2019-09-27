@@ -1,7 +1,7 @@
 name: E2E testing
 class: middle, center, title
 
-# E2E testing with Protractor and&nbsp;Friends
+# E2E Testing with Protractor and&nbsp;Friends
 ## or: How I Learned to Stop Worrying and Test the DOM
 ### Ryan Parsley
 #### October 25, 2019
