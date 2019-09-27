@@ -26,9 +26,6 @@ h1,h2,h3,h4,h5 {
 .remark-slide-content h4 {
   font-size: 16px;
 }
-.remark-slide-content {
-  background-color: #FFDFAA;
-}
 .remark-slide-content:before {
   content: '';
   background: radial-gradient(circle, rgba(255,223,170,1) 67%, rgba(212,173,106,1) 100%);
@@ -37,6 +34,10 @@ h1,h2,h3,h4,h5 {
   bottom:0;
   left:0;
   right:0;
+  z-index:-1;
+}
+.remark-slide-content {
+  background-color: transparent;
 }
 .remark-slide-content * {
   position: relative;
