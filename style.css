@@ -38,7 +38,8 @@ li {
 }
 .remark-slide-content:before {
   content: '';
-  background: radial-gradient(circle, rgba(255,223,170,1) 67%, rgba(212,173,106,1) 100%);
+  background: url(./assets/noise.png), radial-gradient(circle, rgba(255,223,170,1) 67%, rgba(212,173,106,1) 100%);
+  background-size: 50px 50px, auto;
   position:absolute;
   top:0;
   bottom:0;
@@ -57,7 +58,8 @@ li {
 }
 .remark-slide-content.title {
   background: rgb(76,103,140,1);
-  background: radial-gradient(circle, rgba(76,103,140,1) 50%, rgba(44,72,112,1) 100%);
+  background: url(./assets/noise.png), radial-gradient(circle, rgba(76,103,140,1) 50%, rgba(44,72,112,1) 100%);
+  background-size: 50px 50px, auto;
 }
 .remark-slide-content.title:before {
  display: none;
@@ -67,6 +69,10 @@ li {
   background-repeat: no-repeat;
   background-position: center;
   color: #553500;
+}
+.remark-slide-content.title .remark-slide-number {
+  color: #758AA8;
+  color: #051A38;
 }
 .remark-slide-content.title h1 {
   font-size: 60px;
