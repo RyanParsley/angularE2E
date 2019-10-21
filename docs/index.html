@@ -154,6 +154,24 @@ describe('todo list', function() {
 });
 ```
 
+???
+
+Describe and it should look familiar to you if you've done unit testing. Those
+are provided for us to group out specs and associate human readable labels
+should they fail.
+
+Browser is a global that operates as a conduit to the driver. This is a wrapper
+around Selenium's WebDriver.
+
+Element is a function that takes a locator and returns an ElementFinder Object.
+You can chain actions such as `click()` to the results to interact with the
+ElementFinder.
+
+Don't get hung up on ElementFinder as a thing. Suffice it to say that you need a
+reference to dom elements, and  `element()` is what affords you that.
+
+element.all() is there for when you need to return a collection of DOM elements.
+
 ---
 class: middle, center
 
@@ -175,6 +193,239 @@ class: middle, center
 Selenium has comically useless feedback sometimes. Unfortunately, the first opportunity for this is the first time you ever use it if chrome versions come out of sync with node module dependency. If you see something like this, upgrade chrome.
 
 ---
+
+class: middle, center, title
+
+# Less talk more code
+
+---
+
+# App to be tested
+## AcuteBlog
+
+* Authentication
+  * Register
+  * Login
+  * Restricted access
+* Post
+  * Create (logged in users)
+  * Read (anyone)
+  * Update (only your own)
+  * Delete (only your own)
+
+---
+
+# Exercise 1
+## Hello World!
+
+* Clone [the repo](https://jbhunt.visualstudio.com/Training/_git/e2e-acuteBlog)
+* Install packages `npm i`
+* Write a test that confirms the app is running
+
+---
+
+# element()
+
+Global function that takes a locator and returns a 'ElementFinder' object
+
+???
+
+Let's not over think this. You assert against the state of the dom and this is
+how you get a reference to such elements.
+
+---
+
+# Locators
+## Be as specific as you need, but no more
+
+```javascript
+element(by.css('.foo'));
+```
+
+* buttonText
+* cssContainingText
+* linkText
+
+???
+
+This is another concept that's largely provided by webdriver. In the days of
+AngularJS, there seemed to be more work in custom locators for ngModel, binding,
+and other angular centric stuff. That doesn't seem to be as much of a focus now.
+
+And that's fine! Most of what you need can be achieved with `by.css`.
+
+Do not simply copy the class attribute from chrome inspector and past that in
+`by.css()`. That is often littered with presentational helpers that introduce
+additional brittleness to your tests. If someone comes by and eliminates a
+`.float` class either because the element's position has changed or a good old
+fashion CSS refactor, that should not likely make a test fail.
+
+---
+
+# Exercise 2
+## Happy path of an anonymous reader
+
+--
+
+* Home page should be accessible
+--
+
+* Dashboard page should *not* be accessible
+--
+
+* Bogus links redirect to 404
+--
+
+* Posts should be readable
+--
+
+* Posts should *not* be writable
+
+---
+# Page Objects
+## A plain JavaScript object that encapsulates the properties of a template
+
+???
+
+Sounds fancy, we're really just wiring up easy ways to get at the things we need
+to access multiple times.
+
+---
+
+# Page Object
+
+In the page object
+
+```javascript
+var somePage = function(){
+  this.foo = element(by.css('.foo'));
+}
+```
+
+In a test
+```javascript
+somePage.foo.sendKeys('bar');
+```
+
+---
+# Slides about form interaction
+
+---
+
+class: middle, center, title
+
+# Tactics
+
+---
+
+# Do not wait static amounts of time
+
+???
+
+When you set a static wait time, you guarantee the tests will wait an amount of
+time that you hope is greater than the worst case scenario. Craig searched the
+specs and calculated about 28 minutes of waiting is hard coded.
+
+---
+
+# When you need to wait for things
+## Do not do this
+
+```javascript
+public async verifySizeAfterResize(): Promise<boolean> {
+  // Vote of no confidence in DOM readiness
+  await this.actions.shortWait('Short Wait');
+  const width = 1000, height = 800;
+  browser.driver.manage().window().setSize(width, height);
+  // ಠ_ಠ
+  await this.actions.mediumWait('Medium Wait');
+  await this.actions.moveMouseToElement(
+    this.myLoadsSearchIcon,
+    'Move mouse to Icon');
+  await this.actions.click(
+    this.myLoadsSearchIcon,
+    'Click the search icon');
+  // ಠ_ಠ
+  await this.actions.shortWait('Short Wait');
+  return await this.actions.isElementDisplayed(
+    this.searchButtonSearchPanel,
+    'Display the Search Button');
+}
+```
+---
+# A better approach
+## Resolve promises instead of choosing arbitrary times
+
+```
+beforeEach(async () => {
+  await myLoads.open('/my-loads?doAsUserID=JBHKOPA2');
+  await pageStable();
+});
+
+const pageStable = async() => {
+  Promise.all([
+    await browser.wait(EC.not(EC.visibilityOf(myLoads.loadingMask)), 20000),
+    await myLoads.actions.waitUntilElementInvisible(
+      myLoads.growl,
+      'Wait for growl to go away')
+  ]);
+};
+
+it('should open my-loads #smoke', () => {
+  expect(myLoads.title.getText()).toEqual(titleText);
+});
+
+```
+
+---
+# ExpectedConditions
+
+A library of canned expected conditions that are useful for protractor.
+
+Each condition returns a function that evaluates to a promise.
+
+```
+var EC = protractor.ExpectedConditions;
+var button = $('#xyz');
+var isClickable = EC.elementToBeClickable(button);
+
+browser.get(URL);
+browser.wait(isClickable, 5000); //wait for an element to become clickable
+button.click();
+```
+
+[Documentation](https://www.protractortest.org/#/api?view=ProtractorExpectedConditions)
+
+---
+
+# Exercise 3
+## Users should be able to register
+### Interact with forms and leverage expected conditions
+
+--
+
+* Route should be accessible
+--
+
+* Link should be in the menu
+--
+
+* Form should function
+--
+
+* Registered user should be redirected to dashboard
+
+---
+
+# Exercise 4
+## Authenticate a user
+
+* Write a test that logs the user in
+* Write an assertion that proves the user is logged in
+* Visit an authenticated route (/users)
+* Make an assertion about the user list
+---
+
 class: middle, center, title
 
 # Strategy
@@ -238,102 +489,16 @@ much as you can.
 
 ---
 
-# Locators
-## Be as specific as you need, but no more
+# Maintainablility
 
 ???
 
-Do not simply copy the class attribute from chrome inspector and past that in
-`by.css()`. That is often littered with presentational helpers that introduce
-additional brittleness to your tests. If someone comes by and eliminates a
-`.float` class either because the element's position has changed or a good old
-fashion CSS refactor, that should not likely make a test fail.
+In theory, refactoring your code should not need you to update a spec, because
+the spec is about how your app works. Refactoring only affects implementation
+details. Abstracting these to the page object enables this separation of intent
+and implementation.
 
----
 
-# Do not wait static amounts of time
-
-???
-
-When you set a static wait time, you guarantee the tests will wait an amount of
-time that you hope is greater than the worst case scenario. Craig searched the
-specs and calculated about 28 minutes of waiting is hard coded.
----
-class: middle, center, title
-
-# Tactics
-
----
-
-# When you need to wait for things
-
----
-
-# Do not do this 
-
-```javascript
-public async verifySizeAfterResize(): Promise<boolean> {
-  // Vote of no confidence in DOM readiness
-  await this.actions.shortWait('Short Wait');
-  const width = 1000, height = 800;
-  browser.driver.manage().window().setSize(width, height);
-  // ಠ_ಠ
-  await this.actions.mediumWait('Medium Wait');
-  await this.actions.moveMouseToElement(
-    this.myLoadsSearchIcon,
-    'Move mouse to Icon');
-  await this.actions.click(
-    this.myLoadsSearchIcon,
-    'Click the search icon');
-  // ಠ_ಠ
-  await this.actions.shortWait('Short Wait');
-  return await this.actions.isElementDisplayed(
-    this.searchButtonSearchPanel,
-    'Display the Search Button');
-}
-```
----
-# A better approach
-## Resolve promises instead of choosing arbitrary times
-
-```
-beforeEach(async () => {
-  await myLoads.open('/my-loads?doAsUserID=JBHKOPA2');
-  await pageStable();
-});
-
-const pageStable = async() => {
-  Promise.all([
-    await browser.wait(EC.not(EC.visibilityOf(myLoads.loadingMask)), 20000),
-    await myLoads.actions.waitUntilElementInvisible(
-      myLoads.growl,
-      'Wait for growl to go away')
-  ]);
-};
-
-it('should open my-loads #smoke', () => {
-  expect(myLoads.title.getText()).toEqual(titleText);
-});
-
-```
----
-# ExpectedConditions
-
-A library of canned expected conditions that are useful for protractor.
-
-Each condition returns a function that evaluates to a promise.
-
-```
-var EC = protractor.ExpectedConditions;
-var button = $('#xyz');
-var isClickable = EC.elementToBeClickable(button);
-
-browser.get(URL);
-browser.wait(isClickable, 5000); //wait for an element to become clickable
-button.click();
-```
-
-[Documentation](https://www.protractortest.org/#/api?view=ProtractorExpectedConditions)
 ---
 class: middle, center, title
 
@@ -363,90 +528,11 @@ originStateSearchBox = element.all(by.className(
 #  Overly eager testing
 
 ---
-class: middle, center, title
-
-# Less talk more code
-
----
-# App to be tested
-## AcuteBlog
-
-* Authentication
-  * Register
-  * Login
-  * Restricted access
-* Post
-  * Create (logged in users)
-  * Read (anyone)
-  * Update (only your own)
-  * Delete (only your own)
-
----
 # Run tests
 
 ```bash
 ng e2e
 ```
----
-
-# Exercise 1
-## Hello World!
-
-* Write a test that confirms the app is running
-
----
-# Exercise 2
-## Happy path of an anonymous reader
-
---
-
-* Home page should be accessible
---
-
-* Dashboard page should *not* be accessible
---
-
-* Bogus links redirect to 404
---
-
-* Posts should be readable
---
-
-* Posts should *not* be writable
-
----
-# Exercise 3
-## Users should be able to register
-
---
-
-* Route should be accessible
---
-
-* Link should be in the menu
---
-
-* Form should function
---
-
-* Registered user should be redirected to dashboard
-
----
-# Exercise 4
-## Users should be able to log in
-
---
-
-* Route should be accessible
---
-
-* Link should be in the menu
---
-
-* Form should function
---
-
-* Logged in user should be redirected to dashboard
 
 ---
 # Exercise 5
@@ -473,6 +559,15 @@ ng e2e
 --
 
 * Logged in users can *not* delete the posts of others
+
+---
+class: links
+
+# Resources
+
+* [Code Repo](https://jbhunt.visualstudio.com/Training/_git/e2e-acuteBlog)
+* [Presentation](https://ryanparsley.github.io/angularE2E/#1)
+* [Presentation Source](https://github.com/RyanParsley/angularE2E)
 
 ---
 class: links
