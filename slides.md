@@ -195,15 +195,35 @@ class: middle, center, title
 * Write a test that confirms the app is running
 
 ---
+background-image: url(./assets/takeThis.jpg)
+background-size: 500px auto
+
+---
 
 # element()
 
 Global function that takes a locator and returns a 'ElementFinder' object
 
+* getText()
+* click()
+* sendKeys()
+* clear()
+* ...
+
 ???
 
 Let's not over think this. You assert against the state of the dom and this is
-how you get a reference to such elements.
+how you get a reference to such elements. The important think to think about are
+the methods you can use.
+
+* getText()
+* click()
+* sendKeys()
+* clear()
+
+Clicking links, inspecting text, and filling out forms is the majority of what
+you're going to be doing, but check the docs for the rest of the api when you
+need more.
 
 ---
 
@@ -253,34 +273,8 @@ fashion CSS refactor, that should not likely make a test fail.
 
 * Posts should *not* be writable
 
----
-# Page Objects
-## A plain JavaScript object that encapsulates the properties of a template
-
 ???
-
-Sounds fancy, we're really just wiring up easy ways to get at the things we need
-to access multiple times.
-
----
-
-# Page Object
-
-In the page object
-
-```javascript
-var somePage = function(){
-  this.foo = element(by.css('.foo'));
-}
-```
-
-In a test
-```javascript
-somePage.foo.sendKeys('bar');
-```
-
----
-# Slides about form interaction
+Now that you're a little better equipped, let's tackle a few more tests.
 
 ---
 
@@ -288,15 +282,52 @@ class: middle, center, title
 
 # Tactics
 
+???
+
+Up until now I send you out there with the basic building blocks of E2E testing
+and you've got a lot done. Hopefully by the time you're done with Exercise 2
+you're thinking about drying up your tests and itching for tools that will let
+you feel more clever all in all.
+
 ---
 
-# Do not wait static amounts of time
+# Page object
+
+A plain JavaScript object that encapsulates the properties of a template
 
 ???
 
-When you set a static wait time, you guarantee the tests will wait an amount of
-time that you hope is greater than the worst case scenario. Craig searched the
-specs and calculated about 28 minutes of waiting is hard coded.
+Sounds fancy? We're really just wiring up easy ways to get at the things we need
+to access multiple times. This is a widely adopted pattern to essentially define
+an adhoc API for interacting with things on a given route.
+
+--
+
+### Defined in the page object file...
+
+```javascript
+// ./pages/somepage.po.ts
+var somePage = function(){
+  this.foo = element(by.css('.foo'));
+}
+```
+
+### Used in a test...
+
+```javascript
+// ./specs/foo.spec.ts
+somePage.foo.sendKeys('bar');
+```
+
+---
+background-image: url(./assets/slowTests.jpg)
+background-size: 400px auto
+
+???
+
+Do not sleep/ wait for static amounts of time.
+
+Learn more about what you're waiting for and resolve appropriately.
 
 ---
 
@@ -324,7 +355,15 @@ public async verifySizeAfterResize(): Promise<boolean> {
     'Display the Search Button');
 }
 ```
+
+???
+
+When you set a static wait time, you guarantee the tests will wait an amount of
+time that you hope is greater than the worst case scenario. Craig searched the
+specs and calculated about 28 minutes of waiting is hard coded.
+
 ---
+
 # A better approach
 ## Resolve promises instead of choosing arbitrary times
 
@@ -368,6 +407,21 @@ button.click();
 
 [Documentation](https://www.protractortest.org/#/api?view=ProtractorExpectedConditions)
 
+???
+
+The documentation calls out that ExpectedConditions are particularly useful for
+non-angular apps. I don't feel that's accurate. You're going to need them.
+
+---
+background-image: url(./assets/refactor.jpg)
+background-size: 500px auto
+
+???
+
+You've already visited a route and made assertions, but now you have a new tool
+in your belt, so let's leverage a page object to similar effect. It's time
+for...
+
 ---
 
 # Exercise 3
@@ -376,22 +430,74 @@ button.click();
 
 --
 
-* Route should be accessible
+* Leverage a Signup Page object
 --
 
-* Link should be in the menu
+* Signup Route should be accessible
 --
 
 * Form should function
 --
 
-* Registered user should be redirected to dashboard
+* Leverage `ExpectedConditions` to wait for the alert upon submission
+
+???
+
+This should feel familiar at this point but lets use our new tool the Page
+Object to make interacting with this page less brittle.
 
 ---
+background-image: url(./assets/abstraction.jpg)
+background-size: 500px auto
 
+# Helper Methods
+
+???
+
+Page objects aren't the only way to share between tests. It's more appropriate
+to write some simple javascript helpers for certain tasks.
+
+* Login
+* Logout
+* State setup (seed a database)
+
+---
+# While it's cool we can do this...
+
+```javascript
+// in any given spec with respect to any given route that needs to care
+
+browser.executeScript('return window.localStorage.getItem("user");');
+```
+--
+
+## It's more humane to do it like this...
+```javascript
+// ./utils/helpers.ts
+
+export function getCurrentUser() {...}
+```
+---
+# Helper: Login()
+
+```javascript
+export function login() {
+   // Navigate to a login page
+   loginPage.navigateTo();
+   
+   // fill out the login form
+   loginPage.submitLogin('foo', 'bar');
+   
+   // any extra steps to get us to a stable logged in state
+   ...
+}
+```
+
+---
 # Exercise 4
 ## Authenticate a user
 
+* Leverage helper utilities for login and logout
 * Write a test that logs the user in
 * Write an assertion that proves the user is logged in
 * Visit an authenticated route (/users)
@@ -403,6 +509,8 @@ class: middle, center, title
 # Strategy
 
 ---
+background-image: url(./assets/should.gif)
+background-size: 500px auto
 
 # What should we test?
 
@@ -436,6 +544,9 @@ fear of changing prod data. We'll tag these tests `#smoke` (eg `it('should visit
 my-loads #smoke', () => {...})`)
 
 ---
+background-image: url(./assets/codeConfidence.jpg)
+background-size: 350px auto
+
 
 # Change is the only constant in E2E
 
@@ -450,6 +561,17 @@ much as you can.
 
 ---
 
+# Maintainablility
+
+???
+
+In theory, refactoring your code should not need you to update a spec, because
+the spec is about how your app works. Refactoring only affects implementation
+details. Abstracting these to the page object enables this separation of intent
+and implementation.
+
+---
+
 # Do not...
 * use overly specific selectors to find elements (don't just copy the class values from chrome inspector).
 * assert against copy that's likely to change. (Switching copy from using Oxford Comma to AP Style should not break a test).
@@ -461,17 +583,6 @@ much as you can.
 
 ---
 
-# Maintainablility
-
-???
-
-In theory, refactoring your code should not need you to update a spec, because
-the spec is about how your app works. Refactoring only affects implementation
-details. Abstracting these to the page object enables this separation of intent
-and implementation.
-
-
----
 class: middle, center, title
 
 # Anti-patterns
@@ -497,14 +608,11 @@ originStateSearchBox = element.all(by.className(
 ```
 ---
 
+background-image: url(./assets/noTests.jpg)
+background-size: 500px auto
+
 #  Overly eager testing
-
----
-# Run tests
-
-```bash
-ng e2e
-```
+# 
 
 ---
 # Exercise 5
