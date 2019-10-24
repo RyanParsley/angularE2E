@@ -216,10 +216,20 @@ class: middle, center, title
 ---
 
 # Exercise 1
-## Hello World!
 
 * Clone [the repo](https://jbhunt.visualstudio.com/Training/_git/e2e-acuteBlog)
-* Install packages `npm i`
+  and install packages 
+```
+npm i
+```
+* Run the app
+```
+npm run start
+```
+* Run the e2e tests
+```
+npm run e2e -- --suite=ex1
+```
 * Write a test that confirms the app is running
 
 ---
@@ -290,7 +300,7 @@ fashion CSS refactor, that should not likely make a test fail.
 * Home page should be accessible
 --
 
-* Dashboard page should *not* be accessible
+* User list page should *not* be accessible
 --
 
 * Bogus links redirect to 404
@@ -298,8 +308,6 @@ fashion CSS refactor, that should not likely make a test fail.
 
 * Posts should be readable
 --
-
-* Posts should *not* be writable
 
 ???
 Now that you're a little better equipped, let's tackle a few more tests.
@@ -423,7 +431,7 @@ A library of canned expected conditions that are useful for protractor.
 
 Each condition returns a function that evaluates to a promise.
 
-```
+```javascript
 var EC = protractor.ExpectedConditions;
 var button = $('#xyz');
 var isClickable = EC.elementToBeClickable(button);
@@ -648,25 +656,14 @@ background-size: 500px auto
 
 --
 
-* Users can log in
+* Add Post button exists for authenticated users only
 --
 
 * Logged in users can create posts
 --
 
-* Logged in users can edit their own posts
+* Logged in users can edit posts
 --
-
-* Logged in users can comment on posts of others
---
-
-* Logged in users cannot edit the posts of others
---
-
-* Logged in users can delete their own posts
---
-
-* Logged in users can *not* delete the posts of others
 
 ---
 class: links
