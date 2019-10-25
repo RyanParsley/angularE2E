@@ -529,6 +529,7 @@ End to end tests should focus on actions more than what is rendered on the scree
 Example: when testing if clicking a link takes you to an appropriate page, you should not be concerned with if that page has specific content if you can avoid it. Choosing the url, or active menu item are likely better things to assert against.
 
 ---
+class: middle, center
 
 # Workflows
 
@@ -541,6 +542,7 @@ likely hit many components and multiple routes so naming after a given route is
 largely not what we want to do.
 
 ---
+class: middle, center
 
 # Smoke tests
 
@@ -568,6 +570,7 @@ most brittle of testing paradigms. Be aware of this brittleness and avoid it as
 much as you can.
 
 ---
+class: middle, center
 
 # Maintainablility
 
