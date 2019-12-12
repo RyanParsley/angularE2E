@@ -4,7 +4,7 @@ class: middle, center, title
 # E2E Testing with Protractor and&nbsp;Friends
 ## or: How I Learned to Stop Worrying and Test the DOM
 ### Ryan Parsley
-#### October 25, 2019
+#### December 13, 2019
 
 ???
 
@@ -12,9 +12,10 @@ Hello, I'm Ryan Parsley. I'm a Sr Software Engineer working on Carrier 360.
 
 I have the privilege to teach you a thing that is otherwise a little tricky to learn.
 
-It's not a very tricky subject, I don't want to scare you into a defensive posture.
+It's not a very tricky subject, per say, I don't want to scare you into a defensive posture.
 
-It's just that best practices feel more rarely discussed with E2E testing than they do with Unit testing. 
+It's just that best practices feel more rarely discussed with E2E testing than
+they do with Unit testing. So I think it's hard to know how to do it correctly.
 
 ---
 background-image: url(./assets/testPyramid.png)
@@ -25,6 +26,16 @@ background-size: 500px auto
 ???
 
 I'm getting ahead of myself. Let's start with answering "What is an end to end test?"
+
+We're talking about the top of that pyramid. Which implies we should not be
+doing a lot of volume of testing. This chart lives in many variations but the
+gist of all of them is "as you go up you should make less because they're more
+expensive"
+
+However, that is not to say that e2e testing is inefficient. It's the right tool
+for a specific job. E2E tests can't be faster than any given Unit test, but
+they're way faster than humans pawing at the interface. And more likely to be
+consistent.
 
 ---
 
@@ -43,6 +54,12 @@ class: middle, center
 
 # In other words...
 ## E2E tests run in the browser to more closely match real world user interaction with our app.
+
+???
+So the name of the game is interaction. We'll come back to that later but keep
+that in the back of your head when you think about what you _should_ be testing
+with e2e tests.
+
 ---
 
 background-image: url(./assets/whyE2E.gif)
@@ -54,9 +71,18 @@ background-size: 500px auto
 
 The whole isn't always equal to the sum of it's parts.
 
+Unit tests are great, in a lot of ways superior to e2e tests. That's the steady
+foundation of that test pyramid. But they don't tell the whole story.
+
 ---
 
 # Key components of end to end testing
+
+???
+
+There's a lot of moving parts to support e2e testing.
+
+Namely...
 
 --
 * Browser
@@ -638,7 +664,69 @@ background-size: 500px auto
 --
 
 * Logged in users can edit posts
---
+
+---
+class: middle, center, title
+
+# CI/CD
+
+???
+
+So far, ng test has been good enough for local development and running, it's not
+ideal for a continuous integration pipeline though.
+
+---
+# What's the difference!?
+
+* Running the dev server requires a build
+* Dev server !== Production build
+* BYOServror
+
+???
+
+Differences between ahead of time compiliation (AOT) and other cli options can
+put you in a state where the dev server behaves differently than the production
+build.
+
+If you're not using the dev server, you'll need to supply a server
+
+---
+
+# Server choices
+
+* serve
+* http-server
+* angular-http-server
+* express
+
+???
+I love using zero config server solutions like serve and http-server for getting
+a functional frontend up fast, but for our purposes zero config isn't quite
+enough config. 
+
+Namely, you need to set up rewrites so the server supports an SPA.
+
+Angular-http-server looks to work out of the box, but it's not
+popular enough to make me feel all warm and fuzzy about the dependency in our
+pipeline
+
+Express is pretty easy to set up and you can see an example of that in the demo
+app.
+---
+# What's that look like?
+
+```bash
+"ci:start": "node ./bin/www",
+"ci:test": "ng test --watch=false",
+"ci:e2e": "protractor conf.js,
+"ci:run": "start-server-and-test ci:start http://localhost:4201 ci:e2e",
+"ci": "run-s lint ci:test build:express ci:run",
+```
+???
+I particularly like to split tasks up into logical chunks and namespace them
+with semicolons or some token then have a controlling script that calls them
+appropriately. This strikes me as a nice compromise between convenience and
+debuggability.
 
 ---
 class: links
