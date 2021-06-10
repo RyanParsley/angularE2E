@@ -4,11 +4,11 @@ class: middle, center, title
 # E2E Testing with Protractor and&nbsp;Friends
 ## or: How I Learned to Stop Worrying and Test the DOM
 ### Ryan Parsley
-#### December 13, 2019
+#### Feb 10, 2021
 
 ???
 
-Hello, I'm Ryan Parsley. I'm a Sr Software Engineer working on Carrier 360.
+Hello, I'm Ryan Parsley. I'm a Software Engineer working on Match (Coverage).
 
 I have the privilege to teach you a thing that is otherwise a little tricky to learn.
 
@@ -170,6 +170,10 @@ reference to dom elements, and  `element()` is what affords you that.
 
 element.all() is there for when you need to return a collection of DOM elements.
 
+* Element
+* Locator
+* Action
+
 ---
 class: middle, center
 
@@ -190,6 +194,17 @@ class: middle, center
 ???
 Selenium has comically useless feedback sometimes. Unfortunately, the first opportunity for this is the first time you ever use it if chrome versions come out of sync with node module dependency. If you see something like this, upgrade chrome.
 
+---
+# Ok, so how do I fix that?
+
+Make sure chrome is updated then run the following if you have that version
+issue.
+
+```
+npx webdriver-manager clean
+npx webdriver-manager update --versions.chrome 89.0.4389.128
+npm run e2e -- --suite=ex1 --webdriverUpdate=false
+```
 ---
 
 class: middle, center, title
